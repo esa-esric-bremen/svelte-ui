@@ -1,0 +1,47 @@
+@use 'sass:color';
+
+@use '@material/theme/color-palette';
+
+// Svelte Colors! (Dark Theme)
+@use '@material/theme/index' as theme with (
+  $primary: #4093ca,
+  $secondary: color.scale(#676778, $whiteness: -10%),
+  $surface: color.adjust(color-palette.$grey-900, $blue: +4),
+  $background: #000,
+  $error: color-palette.$red-700
+);
+
+.listborder {
+  border: 2px solid #4093ca;
+  border-radius: 8px;
+  padding: 0 !important;
+}
+
+.top-separator-item {
+  border-top: 1px solid #4093ca;
+}
+
+html,
+body {
+  background-color: #000;
+  color: theme.$on-surface;
+}
+
+a {
+  color: #40b3ff;
+}
+a:visited {
+  color: color.scale(#40b3ff, $lightness: -35%);
+}
+
+.hint-container {
+  position: absolute;
+  min-width: 90px;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none; /* Allows clicks to pass through to the button */
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  margin: 6px;
+  padding: 6px;
+}

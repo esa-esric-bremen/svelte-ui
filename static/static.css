@@ -1,0 +1,36 @@
+html,
+body {
+  margin: 0 !important;
+  font-family: sans-serif;
+}
+.red_alert {
+  background-color: #ff6666;
+  animation-name: red_alert_animation;
+  animation-duration: 2s;
+  animation-iteration-count:infinite;
+}
+
+@keyframes red_alert_animation {
+  0%   {background-color: #ff6666;}
+  50% {background-color: #ff0000;}
+  100%   {background-color: #ff6666;}
+}
+
+
+.shortened_title {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.hint-container {
+  position: absolute;
+  min-width: 90px;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  margin: 6px;
+  padding: 6px;
+}
