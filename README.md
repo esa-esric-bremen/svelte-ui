@@ -1,7 +1,9 @@
 # Svelte User Interface for the ESA ESRIC Space Resources Challenge
 TypeScript Svelte application to run on the Server to control the Beneficiation and Excavation systems for the ESA ESRIC Space Resource Challenge.
 
-See https://github.com/esa-esric-bremen/.github/ for a system overview.
+This UI was developed at the [Robotics Innovation Center](http://robotik.dfki-bremen.de/en/startpage.html) of the [German Research Center for Artificial Intelligence (DFKI)](http://www.dfki.de) in Bremen.
+
+See https://github.com/esa-esric-bremen/.github/ for more details, including a system overview.
 
 <img src="https://avatars.githubusercontent.com/u/277213809?s=400&u=25dd27e12b5732cb78306bf27b43139214900f58" style="width:200px;">
 
