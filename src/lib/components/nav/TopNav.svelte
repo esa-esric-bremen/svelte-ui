@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { IconButton } from 'noph-gamepad-components';
-	import { toggleDrawerInput } from '#lib/global_mappings.svelte';
+	import { toggleDrawerInput } from '#lib/global_mappings.svelte.js';
 	import type { InputManager } from 'svelte-gamepad-virtual-joystick';
 
 	let {
@@ -21,7 +21,7 @@
 		context={['nav', 'default']}
 		inputMapping={toggleDrawerInput}
 		aria-label="Menu"
-		onpressed={() => drawer?.togglePopover()}
+		onclick={() => drawer?.togglePopover()}
 	>
 		<span class="material-icons">menu</span>
 	</IconButton>

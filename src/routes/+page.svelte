@@ -35,13 +35,15 @@
     {#each entries as entry (entry.control)}
       <Card type="text" variant="filled" image={entry.image} headline={entry.name}>
         <div class="card-actions">
-          <Button variant="text" onclick={() => goto(entry.view)}>view</Button>
+          <IconButton variant="text" onclick={() => goto(entry.view)}>
+            <span class="material-icons">visibility</span>
+          </IconButton>
           <IconButton
             variant="filled"
             aria-label="Control"
             title="Control"
             inputMapping={entry.inputMapping}
-            onpressed={() => goto(entry.control)}
+            onclick={() => goto(entry.control)}
           >
             <span class="material-icons">play_arrow</span>
           </IconButton>
