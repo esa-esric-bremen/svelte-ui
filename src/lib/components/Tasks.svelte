@@ -1,34 +1,30 @@
 <script lang="ts">
-	import type IConfig from "$lib/interfaces/IConfig";
-	import { toggleTask, ui_state } from "$lib/state/ui.svelte";
-	import LayoutGrid, { Cell } from "@smui/layout-grid";
-	import { Button } from "smui-gamepad-components";
+  import type IConfig from '#lib/interfaces/IConfig';
+  import { ui_state } from '#lib/state/ui.svelte';
+  import { rrc } from '#lib/rrc/clients';
+  import { Button } from 'noph-gamepad-components';
 
-  interface Props {
-    config: IConfig
-  }
+  let { config }: { config: IConfig } = $props();
 
-  let {
-    config
-  }: Props = $props();
+  const isRunning = (name: string) => ui_state.rrc[config.system_name].action_values[`task_${name}`] == 1;
+
+  const toggle = (name: string) =>
+    rrc(config.system_name).setSimpleAction(`task_${name}`, isRunning(name) ? 0 : 1);
 </script>
+
 {#if ui_state.rrc[config.system_name]}
-<LayoutGrid>
-  <Cell span={12}>
-  {#each config.tasks as task}
-  <div style:padding-right={"5px;"} style:display="inline">
-    <Button
-      variant={ui_state.rrc[config.system_name].action_values["task_" + task.name] == 1 ? 'raised' : 'outlined'}
-      onpressed={()=>{ toggleTask(config.system_name, task.name); }}
-      inputMapping={{
-        name: task.name,
-        gamepad: -1,
-        buttons: task.buttons ? task.buttons : [],
-        keys: task.keys ? task.keys : [],
-      }}
-    >{task.name}</Button>
-    </div>
-  {/each}
-  </Cell>
-</LayoutGrid>
+  <div class="toolbar">
+    {#each config.tasks ?? [] as task (task.name)}
+      <Button
+        variant={isRunning(task.name) ? 'filled' : 'outlined'}
+        onpressed={() => toggle(task.name)}
+        inputMapping={{
+          name: task.name,
+          gamepad: -1,
+          buttons: (task.buttons ?? []).map(Number),
+          keys: task.keys ?? []
+        }}>{task.name}</Button
+      >
+    {/each}
+  </div>
 {/if}

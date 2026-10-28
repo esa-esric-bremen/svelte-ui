@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { GamepadButtons, Icon as GamepadIcon, Joystick, VirtualButton } from "svelte-gamepad-virtual-joystick";
-	import { IconButton } from "smui-gamepad-components";
-	import Button, { Icon } from "@smui/button";
-	import { emergencyMapping, gamepadActivationMapping } from "$lib/global_mappings.svelte";
+	import { IconButton } from "noph-gamepad-components";
+	import { Button } from "noph-ui";
+	import { emergencyMapping, gamepadActivationMapping } from "#lib/global_mappings.svelte";
 	import { onMount } from "svelte";
-	import { ui_state } from "$lib/state/ui.svelte";
-	import { browser } from "$app/environment";
-	import WebsocketData from "$lib/com/WebsocketData";
+	import { rrc } from "#lib/rrc/clients";
 
   const CONTROL_INTERVAL = 100;
   const MIN_SPEED = 0.01;
@@ -60,49 +58,35 @@
     left_stick = $bindable([0, 0]),
     right_stick = $bindable([0, 0]),
     activated = $bindable(false)
-  } = $props<{
+  }: {
     system_name: string,
     speed?: number,
     left_stick?: [x: number, y: number],
     right_stick?: [x: number, y: number],
     activated?: boolean
-  }>();
+  } = $props();
 
-  let controlInterval: number | undefined;
 
   onMount(() => {
-    if (!ui_state.websocket) {
-      ui_state.websocket = new WebsocketData();
-      ui_state.websocket.connect();
-    }
-
-    controlInterval = setInterval(() => {
-      if (!browser || !activated) {
-        return
-      }
-      if (!ui_state.websocket) {
-        ui_state.websocket = new WebsocketData();
-        ui_state.websocket.connect();
-      }
-      console.log(-left_stick[1] * speed, -right_stick[0] * speed)
-      ui_state.websocket.send(JSON.stringify({
-        sys: system_name,
-        twist: {
-          linear_x: -left_stick[1] * speed,
-          linear_y: 0,
-          linear_z: 0,
-          angular_x: 0,
-          angular_y: 0,
-          angular_z: -right_stick[0] * speed,
+    const client = rrc(system_name);
+    // send a single stop when control is released, otherwise the last twist keeps running
+    let stopped = true;
+    const controlInterval = setInterval(() => {
+      if (!activated) {
+        if (!stopped) {
+          client.setTwist(0, 0);
+          stopped = true;
         }
-      }));
+        return;
+      }
+      stopped = false;
+      client.setTwist(-left_stick[1] * speed, -right_stick[0] * speed);
     }, CONTROL_INTERVAL);
-    
 
     return () => {
-      activated = false;
-      if (controlInterval !== undefined) {
-        clearInterval(controlInterval);
+      clearInterval(controlInterval);
+      if (!stopped) {
+        client.setTwist(0, 0);
       }
     }
   });
@@ -126,7 +110,7 @@
       <div style="width:150px; text-align: center;">
         <div style="position: relative; width:150px; text-align: center;">
           <IconButton
-            style="width: 36px; height: 36px"
+            size="s"
             inputMapping={{
               name: 'decrease_duration',
               gamepad: -1,
@@ -137,11 +121,11 @@
               speed = Math.max(speed-0.01, MIN_SPEED);
             }}
           >
-            <Icon class="material-icons">remove</Icon>
+            <span class="material-icons">remove</span>
           </IconButton><span style="user-select: none;">
           &nbsp; {speed.toFixed(2)} &nbsp;
           </span><IconButton
-            style="width: 36px; height: 36px"
+            size="s"
             inputMapping={{
               name: 'increase_duration',
               gamepad: -1,
@@ -152,7 +136,7 @@
               speed = Math.min(speed+0.01, MAX_SPEED);
             }}
           >
-            <Icon class="material-icons">add</Icon>
+            <span class="material-icons">add</span>
           </IconButton>
           <div style="float:left;">
             
@@ -170,7 +154,6 @@
           </div>
           <Button
             variant="outlined"
-            style="min-height: 60px;"
             onclick={() => {
               activated = false;
             }}>release control</Button>
@@ -197,7 +180,7 @@
     height: 232px;
     text-align:center;
     display: flex;
-    border: 1px solid white;
+    border: 1px solid var(--np-color-outline);
     border-radius: 6px;
     justify-content: center;
     align-items: center;">

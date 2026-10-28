@@ -6,6 +6,7 @@ export default interface ISensor {
   pos: number
   driver: 'hx711' | 'gpio' | 'ina228' | 'cpu_temp' | 'vcgencmd'
   frequency: number
+  min_okay?: number
   max_okay?: number 
   show_diff?: boolean
   unit?: string

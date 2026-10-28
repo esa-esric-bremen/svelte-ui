@@ -1,25 +1,20 @@
 <script lang="ts">
-  import CircularProgress from '@smui/circular-progress';
+  import { CircularProgress } from 'noph-ui';
 </script>
 
 <div class="loading-container">
-  <CircularProgress style="height: 64px; width: 64px;" indeterminate />
+  <CircularProgress indeterminate />
   <h5>
     Loading...
   </h5>
 </div>
 
-<style lang="scss">
-  @use '@material/typography/index' as typography;
-
-  h5 {
-    @include typography.typography('headline5');
-  }
-
+<style>
   .loading-container {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 16px;
     height: 100vh;
   }
 </style>

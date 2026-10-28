@@ -1,186 +1,136 @@
 <script lang="ts">
-  import { Icon } from '@smui/button';
-	import type IAction from '$lib/interfaces/IAction';
-	import { ui_state } from '$lib/state/ui.svelte';
-  import { Cell } from '@smui/layout-grid';
-  import Paper, {Content} from "@smui/paper";
-	import { IconButton } from 'smui-gamepad-components';
-	import { GamepadButtons, type ButtonInput, Button } from 'svelte-gamepad-virtual-joystick';
-	import StepSlider from '$lib/StepSlider.svelte';
-	import { emergencyMapping } from '$lib/global_mappings.svelte';
-	import type IConfig from '$lib/interfaces/IConfig';
+	import type IAction from '#lib/interfaces/IAction';
+	import type IConfig from '#lib/interfaces/IConfig';
+	import { ui_state } from '#lib/state/ui.svelte';
+	import { rrc } from '#lib/rrc/clients';
+	import { emergencyMapping } from '#lib/global_mappings.svelte';
+	import StepSlider from '#lib/StepSlider.svelte';
+	import { Button, IconButton } from 'noph-gamepad-components';
+	import { GamepadButtons, type ButtonInput } from 'svelte-gamepad-virtual-joystick';
 
-  // TODO: inherit from ActionCommand
-  const {
-    action,
-    fullRange,
-    config,
-    readonly
-  } = $props<{
-    action: IAction,
-    fullRange: boolean,
-    config: IConfig,
-    readonly: boolean
-  }>();
+	let {
+		action,
+		fullRange,
+		config,
+		readonly
+	}: {
+		action: IAction;
+		fullRange: boolean;
+		config: IConfig;
+		readonly: boolean;
+	} = $props();
 
-  let value = $state(ui_state.rrc[config.system_name].action_values[action.command] ?? action.start ?? 0);
+	const actualValue = $derived(ui_state.rrc[config.system_name].action_values[action.command]);
+	const step = action.step || 10;
+	const min = $derived(action.ui_range && !fullRange ? action.ui_range[0] : (action.range?.[0] ?? 0));
+	const max = $derived(action.ui_range && !fullRange ? action.ui_range[1] : (action.range?.[1] ?? 100));
 
-  function checkDeadzones(newValue: number, difference: number): number {
-    if (!action.deadzones) {
-      return newValue;
-    }
-    for (const deadzone of action.deadzones) {
-      if (newValue >= deadzone[0] && newValue <= deadzone[1]) {
-        newValue = difference < 0 ? deadzone[0] - action.step : deadzone[1] + action.step;
-       }
-    }
-    return newValue;
-  }
+	let value = $state(
+		ui_state.rrc[config.system_name].action_values[action.command] ?? action.start ?? 0
+	);
 
-  function updateFromActualValue(difference: number): number {
-    let newValue = ui_state.rrc[config.system_name].action_values[action.command] + difference;
-    newValue = Math.round(newValue / action.step) * action.step;
-    newValue = Math.max(Math.min(newValue, getMax()), getMin());
-    if (action.deadzones) {
-       if (action.deadzones[0] && newValue > action.deadzones[0][0] && newValue < action.deadzones[0][1]) {
-        newValue = difference < 0 ? action.deadzones[0][0] - action.step : action.deadzones[0][1] + action.step
-       }
-    }
-    return checkDeadzones(newValue, difference);
-  }
+	function skipDeadzones(newValue: number, difference: number): number {
+		for (const [low, high] of action.deadzones ?? []) {
+			if (newValue >= low && newValue <= high) {
+				newValue = difference < 0 ? low - step : high + step;
+			}
+		}
+		return newValue;
+	}
 
-  // const inputMapping = {
-  //   name: action.name,
-  //   gamepad: -1,
-  //   sensitivity: 0.05,
-  //   axes: 0,
-  //   buttons: [GamepadButtons.RIGHT], // activate/focus next component
-  //   buttons_neg: action.buttons_neg || [GamepadButtons.L1],
-  //   buttons_pos: action.buttons_pos || [GamepadButtons.R1],
-  //   keys_pos: [],
-  //   keys_neg: [],
-  //   keys: ['e', 'enter'],  // activate/focus next component
-  //   invert: false
-  // }
+	// step relative to what the robot actually runs, not to the last requested value
+	function stepFromActual(difference: number) {
+		let newValue = Math.round(((actualValue ?? value) + difference) / step) * step;
+		newValue = Math.max(Math.min(newValue, max), min);
+		value = skipDeadzones(newValue, difference);
+	}
 
-  const inputMappingLeft: ButtonInput = {
-    name: action.name + "_left",
-    gamepad: -1,
-    buttons: action.buttons_neg || [GamepadButtons.L1],
-    keys: action.keys_neg || ['d'],
-  }
-  const inputMappingRight: ButtonInput = {
-    name: action.name + "_right",
-    gamepad: -1,
-    buttons: action.buttons_pos || [GamepadButtons.R1],
-    keys: action.keys_pos || ['a'],
-  }
+	function stop() {
+		if (readonly) return;
+		if (action.value_stop) {
+			value = action.start ?? 0;
+		} else {
+			rrc(config.system_name).setSimpleAction(`stop_${action.command}`, action.start ?? 0);
+		}
+	}
 
-  let resetBtn: ButtonInput = $state({
-    gamepad: -1,
-    buttons: Array.from(emergencyMapping.buttons),
-    keys: Array.from(emergencyMapping.keys),
-    name: 'reset to start'
-  });
+	const leftMapping: ButtonInput = {
+		name: action.name + '_left',
+		gamepad: -1,
+		buttons: action.buttons_neg ?? [GamepadButtons.L1],
+		keys: action.keys_neg ?? ['d']
+	};
+	const rightMapping: ButtonInput = {
+		name: action.name + '_right',
+		gamepad: -1,
+		buttons: action.buttons_pos ?? [GamepadButtons.R1],
+		keys: action.keys_pos ?? ['a']
+	};
+	const stopMapping: ButtonInput = { ...emergencyMapping, name: 'reset to start' };
 
-  function getMin() {
-    if (action.ui_range && !fullRange) {
-      return action.ui_range[0];
-    }
-    return action.range[0] || 0;
-  }
+	$effect(() => {
+		if (readonly) return;
+		if (isNaN(value)) {
+			value = actualValue ?? action.start ?? 0;
+			return;
+		}
+		const clamped = Math.max(Math.min(value, max), min);
+		if (clamped != value) {
+			value = clamped;
+			return;
+		}
+		rrc(config.system_name).setSimpleAction(action.command, value);
+	});
 
-  function getMax() {
-    if (action.ui_range && !fullRange) {
-      return action.ui_range[1];
-    }
-    return action.range[1] || 100;
-  }
-
-  $effect(() => {
-    if (!ui_state.websocket) {
-      return
-    }
-
-    if (isNaN(value)) {
-      value = ui_state.rrc[config.system_name].action_values[action.command];
-      return;
-    }
-
-    value = Math.max(Math.min(value, getMax()), getMin());
-
-    ui_state.websocket.send(JSON.stringify({
-      cmd: action.command,
-      sys: config.system_name,
-      value
-    }));
-  });
+	const icon = action.icon ?? action.command;
 </script>
 
-<Cell spanDevices={{ desktop: 2, tablet: 1, phone: 1 }}>
-  <Paper variant="unelevated">
-    <Content>
-      {action.name}
-      <span class="mobile"><br />
-      <b style:font-size="20pt">{value}</b>
-      </span>
-    </Content>
-  </Paper>
-</Cell>
-<Cell span={1}><Button style="height:80px; background: rgba(0,0,0,0.2);" onpressed={() => {value = updateFromActualValue(-action.step)}} inputMapping={inputMappingLeft}><img alt="left" src="/{action.icon ? action.icon : action.command}_left.png" style:height="80px;"></Button></Cell>
-<Cell span={6} class="no_mobile">
-  <StepSlider 
-    bind:value
-    min={getMin()}
-    max={getMax()}
-    disabled={readonly}
-    actualValue={ui_state.rrc[config.system_name].action_values[action.command]}
-    step={action.step || 10}
-    start={action.start || 0}></StepSlider>
-</Cell>
-<Cell span={1}><Button style="height:80px; background: rgba(0,0,0,0.2);" onpressed={() => {value = updateFromActualValue(action.step)}} inputMapping={inputMappingRight}><img alt="right" src="/{action.icon ? action.icon : action.command}_right.png" style:height="80px;"></Button></Cell>
-<Cell span={1} class="no_mobile">
-  <b style:font-size="20pt">{value}</b>
-</Cell>
-<Cell span={1}>
-<IconButton
-  style="height: 80px; width:80px;"
-  inputMapping={resetBtn}
-  onpressed={() => {
-    if (action.value_stop) {
-      value = action.start;
-    } else {
-      if (!ui_state.websocket || readonly) {
-        return
-      }
-      ui_state.websocket.send(JSON.stringify({
-       cmd: `stop_${action.command}`,
-       sys: config.system_name,
-       value: action.start || 0
-      }));
-    }
-    return false;
-  }}
->
-  <Icon class="material-icons">stop</Icon>
-</IconButton> &nbsp;
-</Cell>
+<div class="action-row">
+	<div class="name">
+		{action.name}
+		<b class="mobile">{value}</b>
+	</div>
+	<Button variant="tonal" disabled={readonly} onpressed={() => stepFromActual(-step)} inputMapping={leftMapping}>
+		<img alt="decrease" src="/{icon}_left.png" />
+	</Button>
+	<div class="no_mobile">
+		<StepSlider bind:value {min} {max} {step} {actualValue} start={action.start ?? 0} disabled={readonly} />
+	</div>
+	<Button variant="tonal" disabled={readonly} onpressed={() => stepFromActual(step)} inputMapping={rightMapping}>
+		<img alt="increase" src="/{icon}_right.png" />
+	</Button>
+	<b class="value no_mobile">{value}</b>
+	<IconButton variant="outlined" disabled={readonly} inputMapping={stopMapping} onpressed={stop}>
+		<span class="material-icons">stop</span>
+	</IconButton>
+</div>
 
 <style>
-@media (max-width: 840px) {
-  :global(.no_mobile) {
-    display: none !important;
-  }
-}
+	.action-row {
+		display: grid;
+		grid-template-columns: 2fr auto 6fr auto 1fr auto;
+		gap: 10px;
+		align-items: center;
+		padding: 6px 0;
+	}
 
-@media (min-width: 840px) {
-  :global(.mobile) {
-    display: none !important;
-  }
-}
+	@media (max-width: 840px) {
+		.action-row {
+			grid-template-columns: 2fr auto auto auto;
+		}
+	}
 
-  :global(:root) {
-    --mdc-layout-grid-margin-desktop: 6px;
-    --mdc-layout-grid-gutter-desktop: 10px;
-  }
+	.value {
+		font-size: 20pt;
+		text-align: center;
+	}
+
+	.name b {
+		display: block;
+		font-size: 20pt;
+	}
+
+	img {
+		height: 64px;
+	}
 </style>

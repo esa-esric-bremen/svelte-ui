@@ -1,25 +1,15 @@
 <script lang="ts">
-  import Snackbar, { Label as SnackbarLabel } from  '@smui/snackbar';
-  import { hintMapping } from "$lib/global_mappings.svelte";
-  import { Icon as GamepadIcon } from 'svelte-gamepad-virtual-joystick';
-	import { onMount } from 'svelte';
+  import { Snackbar } from 'noph-ui';
+  import { hintMapping } from '#lib/global_mappings.svelte';
+  import { onMount } from 'svelte';
 
-  let hintInfo: Snackbar;
+  let showPopover: (() => void) | undefined = $state();
 
-  onMount(() => {
-    hintInfo.open();
-  })
+  onMount(() => showPopover?.());
 </script>
 
-<Snackbar bind:this={hintInfo}>
-  <SnackbarLabel>
-    <GamepadIcon 
-      type="keyboard_mouse" 
-      input={hintMapping.keys[0]}></GamepadIcon>
-    or 
-    <GamepadIcon
-      type="ps4"
-      input={hintMapping.buttons[0]}></GamepadIcon>
-    toggle help.
-  </SnackbarLabel>
-</Snackbar>
+<Snackbar
+  bind:showPopover
+  label="Press '{hintMapping.keys[0].toUpperCase()}' or Share to toggle help."
+  timeout={6000}
+/>

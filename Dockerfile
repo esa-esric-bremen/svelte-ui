@@ -1,5 +1,5 @@
 # use stable LTS version of alpine
-FROM node:lts-alpine@sha256:d2166de198f26e17e5a442f537754dd616ab069c47cc57b889310a717e0abbf9
+FROM node:lts-alpine
 
 WORKDIR /app/
 
@@ -8,7 +8,6 @@ COPY ./svelte-ui/. .
 RUN rm /app/src/lib/data && mkdir /app/src/lib/data
 COPY ./controller-web/data/* /app/src/lib/data/
 RUN npm i -D
-RUN npm run smui
 RUN npm run build
 EXPOSE 9090
 

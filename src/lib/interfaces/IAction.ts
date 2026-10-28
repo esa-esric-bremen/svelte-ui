@@ -15,4 +15,5 @@ export default interface IAction {
   buttons_neg?: [btn: number]
   value_stop?: boolean
   counter?: string
+  deadzones?: [low: number, high: number][]
 }

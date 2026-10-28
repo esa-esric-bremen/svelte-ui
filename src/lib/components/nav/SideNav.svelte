@@ -1,95 +1,52 @@
 <script lang="ts">
-	import { goto } from "$app/navigation";
-	import { drawerMapping } from "$lib/global_mappings.svelte";
-	import Drawer, { Content } from "@smui/drawer";
-	import { Item, Text } from "@smui/list";
-	import { List } from "smui-gamepad-components";
-	import type { InputManager } from "svelte-gamepad-virtual-joystick";
-
-  interface Props {
-    mgr?: InputManager
-    open?: boolean
-    navList?: List
-  }
+  import { page } from '$app/state';
+  import { drawerMapping } from '#lib/global_mappings.svelte';
+  import { NavigationDrawer } from 'noph-gamepad-components';
+  import { NavigationDrawerItem } from 'noph-ui';
+  import type { InputManager } from 'svelte-gamepad-virtual-joystick';
 
   let {
-    navList = $bindable(),
-    open = $bindable(false),
-    mgr = $bindable()
-  }: Props = $props();
+    drawer = $bindable(),
+    mgr
+  }: {
+    drawer?: HTMLElement;
+    mgr?: InputManager;
+  } = $props();
 
   const pages = [
-    {title: 'Systems', url: '/'},
-    {title: 'Coyote with excavation', url: '/coyote_full'},
-    {title: 'Overview', url: '/overview'},
-    {title: 'Network/System Log', url: '/log'},
+    { title: 'Systems', url: '/' },
+    { title: 'Coyote with excavation', url: '/coyote_full' },
+    { title: 'Overview', url: '/overview' },
+    { title: 'Network/System Log', url: '/log' }
     //{title: 'Video Streaming', url: '/streaming'},
     //{title: 'Configuration', url: '/config'},
     // {title: 'Recordings', url: '/rec'},
-  ]
+  ];
 
-  function gotoIdx(idx: number) {
-    open = false;
-    if (idx < 0 || idx > pages.length ) {
-      return;
-    }
-    const url = pages[idx].url;
-    if (url.startsWith('/')) {
-      goto(url);
-    } else {
-      goto(`/${url}`)
+  // the gamepad navigates the drawer only while it is open
+  function ontoggle(event: ToggleEvent) {
+    const open = event.newState === 'open';
+    mgr?.changeContext(open ? 'nav' : 'default');
+    if (open) {
+      drawer?.querySelector<HTMLElement>('.np-navigation-drawer-item')?.focus();
     }
   }
-
-  let selectionIndex: number = $state(0);
 </script>
 
-<div class="drawer-container">
-<Drawer
-    variant="dismissible"
-    style="max-height: calc(100vh); position:fixed;"
-    bind:open>
-  <Content>
-    <List
-      bind:this={navList}
-      bind:selectedIndex={selectionIndex}
-      context={['nav']}
-      inputMapping={drawerMapping}
-      onpressed={() => {
-        if (mgr) {
-          mgr.changeContext('default');
-        }
-        gotoIdx(selectionIndex);
-        return false;
-      }}
-    >
-
-      {#each pages as item, i}
-        <Item
-          onSMUIAction={() => {
-            if (mgr) {
-              mgr.changeContext('default');
-            }
-            selectionIndex = i;
-            gotoIdx(i);
-          }}
-          selected={selectionIndex === i}
-        >
-          <Text>{item.title}</Text>
-        </Item>
-      {/each}
-    </List>
-  </Content>
-</Drawer>
-</div>
-
-<style>
-  /* These classes are only needed because the
-    drawer is in a container on the page. */
-  .drawer-container {
-    padding-top: 48px;
-    max-width: 600px;
-      var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.1));
-    overflow: hidden;
-  }
-</style>
+<NavigationDrawer
+  bind:element={drawer}
+  modal
+  backdrop
+  context={['nav']}
+  inputMapping={drawerMapping}
+  {ontoggle}
+>
+  {#each pages as item (item.url)}
+    <NavigationDrawerItem
+      label={item.title}
+      href={item.url}
+      selected={page.url.pathname === item.url}
+      onclick={() => drawer?.hidePopover()}
+    />
+  {/each}
+</NavigationDrawer>

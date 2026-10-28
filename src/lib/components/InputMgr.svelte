@@ -1,14 +1,14 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  import { hintMapping } from "$lib/global_mappings.svelte";
+  import { hintMapping } from "#lib/global_mappings.svelte";
   import { component_state, InputManager, VirtualButton } from "svelte-gamepad-virtual-joystick";
 
   let {
     numGamepads = $bindable(0),
     mgr = $bindable()
   }: {numGamepads?: number,
-    mgr: InputManager
+    mgr?: InputManager
   } = $props();
 
   onMount(() => {

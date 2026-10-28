@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { IGraphConfig } from '$lib/interfaces/IGraphConfig';
-  import { ui_state } from '$lib/state/ui.svelte';
-  import Button from '@smui/button';
+  import type { IGraphConfig } from '#lib/interfaces/IGraphConfig';
+  import { ui_state } from '#lib/state/ui.svelte';
+  import { Button } from 'noph-ui';
   import * as d3 from 'd3';
 
   export type DataPoint = [measurement: number, time: Date];
@@ -237,7 +237,7 @@
       </clipPath>
     </defs>
   </svg>
-  <Button onclick={resetZoom}>Reset</Button>
+  <Button variant="text" onclick={resetZoom}>Reset</Button>
 </div>
 
 <style>

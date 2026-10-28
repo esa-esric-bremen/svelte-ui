@@ -1,13 +1,10 @@
 <script lang="ts">
-  import ScrollableLog from "$lib/components/log/ScrollableLog.svelte";
-  import Nav from "$lib/components/nav/Nav.svelte";
-  import Paper from "@smui/paper";
+  import ScrollableLog from '#lib/components/log/ScrollableLog.svelte';
+  import Nav from '#lib/components/nav/Nav.svelte';
 </script>
 
 <Nav>
-  <div class="center_main">
-    <Paper>
-<ScrollableLog></ScrollableLog>
-    </Paper>
-  </div>
+  <section class="center_main">
+    <ScrollableLog />
+  </section>
 </Nav>

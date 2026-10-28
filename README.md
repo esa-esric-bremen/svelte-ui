@@ -34,10 +34,21 @@ $ npm i -D && npm i
 
 ### Dependencies
 This User Interface depends on:
-1. [**Svelte Material UI**](https://sveltematerialui.com/) for the UI components following [Google Material v2 Design Guidelines](https://m2.material.io/)
+1. [**Noph UI**](https://noph.dev/) for the UI components following the [Material 3 Design Guidelines](https://m3.material.io/).
+1. [**noph-gamepad-components**](https://www.npmjs.com/package/noph-gamepad-components) for Noph components controllable by gamepad and keyboard, based on [svelte-gamepad-virtual-joystick](https://codeberg.org/brean/svelte-gamepad-virtual-joystick).
 1. [**D3.js**](https://d3js.org/) for rendering realtime line graphs of incoming sensor data.
 1. **js-yaml** for parsing YAML robot configuration files.
-1. **svelte-gamepad-virtual-joystick** for HTML 5 gamepad controls.
+
+### Connection to the robots
+The UI uses the web transports of [Robot Remote Control](https://github.com/dfki-ric/robot_remote_control) provided by [controller-web](https://github.com/esa-esric-bremen/controller-web): telemetry as JSON over a websocket, commands as JSON via http.
+Both are proxied by Vite (dev server and `vite preview`), the routes are generated from the robot configurations in `src/lib/data` (`web_command_port`, `web_telemetry_port`):
+
+```
+/backend/<system_name>/api/command -> http://$BACKEND_HOST:<web_command_port>/api/command
+/backend/<system_name>/ws          -> ws://$BACKEND_HOST:<web_telemetry_port>
+```
+
+`BACKEND_HOST` defaults to `localhost`, see `env-sim` for the simulation setup.
 
 ### Troubleshooting
 

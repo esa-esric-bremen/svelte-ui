@@ -1,56 +1,58 @@
 <script lang="ts">
-  import TopAppBar, { Row, Section, Title } from '@smui/top-app-bar';
-  import IconButton, { Icon as IconButtonIcon } from '@smui/icon-button';
-  import { Fab, IconButton as IB, List } from 'smui-gamepad-components';
-  import { toggleDrawerInput } from '$lib/global_mappings.svelte';
-	import { type InputManager } from 'svelte-gamepad-virtual-joystick';
+	import { IconButton } from 'noph-gamepad-components';
+	import { toggleDrawerInput } from '#lib/global_mappings.svelte';
+	import type { InputManager } from 'svelte-gamepad-virtual-joystick';
 
-  interface Props {
-    showSideNav?: boolean
-    title?: string
-    numGamepads: number
-    mgr?: InputManager
-    navList: List
-  }
-
-  let {
-    showSideNav = $bindable(false),
-    title = "BREMEN Ground Station",
-    mgr = $bindable(),
-    navList = $bindable(),
-    numGamepads
-  }: Props = $props();
-
+	let {
+		title = 'BREMEN Ground Station',
+		numGamepads,
+		mgr,
+		drawer
+	}: {
+		title?: string;
+		numGamepads: number;
+		mgr?: InputManager;
+		drawer?: HTMLElement;
+	} = $props();
 </script>
 
-<TopAppBar
-  variant="fixed"
-  dense
->
-  <Row>
-    <Section>
-      <IB
-        context={['nav', 'default']}
-        inputMapping={toggleDrawerInput}
-        onpressed={() => {
-          showSideNav = !showSideNav;
-          if (!mgr) return
-          if (showSideNav) {
-            mgr.changeContext('nav');
-            navList.focus();
-          } else {
-            mgr.changeContext('default');
-          }
-          
-        }}>
-          <IconButtonIcon class="material-icons">menu</IconButtonIcon>
-        </IB>
-        <Title>{title}</Title>
-    </Section>
-    {#if numGamepads > 0}
-      <IconButton  class="material-icons">
-        sports_esports_rounded
-      </IconButton>
-    {/if}
-  </Row>
-</TopAppBar>
+<header>
+	<IconButton
+		context={['nav', 'default']}
+		inputMapping={toggleDrawerInput}
+		aria-label="Menu"
+		onpressed={() => drawer?.togglePopover()}
+	>
+		<span class="material-icons">menu</span>
+	</IconButton>
+	<h1>{title}</h1>
+	{#if numGamepads > 0}
+		<span class="material-icons gamepad" title="gamepad connected">sports_esports</span>
+	{/if}
+</header>
+
+<style>
+	header {
+		position: fixed;
+		inset: 0 0 auto 0;
+		height: 48px;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 0 8px;
+		background-color: var(--np-color-surface-container);
+		color: var(--np-color-on-surface);
+	}
+
+	h1 {
+		flex: 1;
+		margin: 0;
+		font-size: 1.25rem;
+		font-weight: 500;
+	}
+
+	.gamepad {
+		color: var(--np-color-primary);
+	}
+</style>
