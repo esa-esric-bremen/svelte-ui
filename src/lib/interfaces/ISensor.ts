@@ -4,7 +4,7 @@ export default interface ISensor {
   id: string
   name: string
   pos: number
-  driver: 'hx711' | 'gpio' | 'ina228' | 'cpu_temp' | 'vcgencmd'
+  driver: 'hx711' | 'gpio' | 'ina228' | 'ads1x15' | 'cpu_temp' | 'vcgencmd' | 'olimexino'
   frequency: number
   min_okay?: number
   max_okay?: number 

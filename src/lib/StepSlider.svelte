@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Slider } from 'noph-gamepad-components';
+  import { onDestroy } from 'svelte';
   import type { SliderInput } from 'svelte-gamepad-virtual-joystick';
 
   let {
@@ -35,6 +36,8 @@
   };
 
   const position = (v: number) => ((v - min) / (max - min)) * 100;
+  const trackLeft = (percent: number) =>
+    `calc(var(--np-slider-layer-inset, 6px) + ${percent / 100} * (100% - 2 * var(--np-slider-layer-inset, 6px)))`;
 
   const ticks = $derived.by(() => {
     if (step <= 0 || min >= max) return [];
@@ -47,6 +50,25 @@
     return [...values];
   });
 
+  // Value label shown on every change.
+  const LABEL_VISIBLE_MS = 1200;
+  let labelVisible = $state(false);
+  let labelTimer: ReturnType<typeof setTimeout> | undefined;
+  let lastValue = value;
+
+  $effect(() => {
+    if (value === lastValue) return;
+    lastValue = value;
+    labelVisible = true;
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(() => (labelVisible = false), LABEL_VISIBLE_MS);
+  });
+  onDestroy(() => clearTimeout(labelTimer));
+
+  // as many decimals as the step has
+  const decimals = $derived(step > 0 && step < 1 ? Math.min(6, Math.ceil(-Math.log10(step))) : 0);
+  const labelPosition = $derived(Math.max(0, Math.min(100, position(value))));
+
   const actualPosition = $derived(
     actualValue == null ? undefined : Math.max(0, Math.min(100, position(actualValue)))
   );
@@ -55,13 +77,19 @@
 <div class="slider-wrapper">
   <div class="tick-container">
     {#each ticks as tick (tick)}
-      <div class="tick-line" class:is-start={tick == start} style:left="{position(tick)}%"></div>
+      <div class="tick-line" class:is-start={tick == start} style:left={trackLeft(position(tick))}></div>
     {/each}
+  </div>
+
+  <div class="label-container" aria-hidden="true">
+    <div class="value-indicator" class:visible={labelVisible} style:left={trackLeft(labelPosition)}>
+      {value.toFixed(decimals)}
+    </div>
   </div>
 
   {#if actualPosition !== undefined}
     <div class="arrow-container">
-      <div class="actual-value-arrow" style:left="{actualPosition}%" title={String(actualValue)}></div>
+      <div class="actual-value-arrow" style:left={trackLeft(actualPosition)} title={String(actualValue)}></div>
     </div>
   {/if}
 
@@ -69,6 +97,44 @@
 </div>
 
 <style>
+  .label-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* same look as the value indicator of noph's slider */
+  .value-indicator {
+    position: absolute;
+    bottom: -6px;
+    min-width: var(--np-slider-label-width, 48px);
+    height: var(--np-slider-label-height, 44px);
+    padding: 0 8px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--np-color-inverse-surface);
+    color: var(--np-color-inverse-on-surface);
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(-50%) scale(0.8);
+    transition:
+      opacity 0.2s cubic-bezier(0.2, 0, 0, 1),
+      transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .value-indicator.visible {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+
   .slider-wrapper {
     position: relative;
     padding: 10px 0 16px;
