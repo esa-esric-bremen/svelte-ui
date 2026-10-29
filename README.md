@@ -44,11 +44,11 @@ The UI uses the web transports of [Robot Remote Control](https://github.com/dfki
 Both are proxied by Vite (dev server and `vite preview`), the routes are generated from the robot configurations in `src/lib/data` (`web_command_port`, `web_telemetry_port`):
 
 ```
-/backend/<system_name>/api/command -> http://$BACKEND_HOST:<web_command_port>/api/command
-/backend/<system_name>/ws          -> ws://$BACKEND_HOST:<web_telemetry_port>
+/backend/<system_name>/api/command -> http://$VITE_BACKEND_URI:<web_command_port>/api/command
+/backend/<system_name>/ws          -> ws://$VITE_BACKEND_URI:<web_telemetry_port>
 ```
 
-`BACKEND_HOST` defaults to `localhost`, see `env-sim` for the simulation setup.
+`VITE_BACKEND_URI` defaults to `localhost`, see `env-sim` for the simulation setup.
 
 ### Troubleshooting
 

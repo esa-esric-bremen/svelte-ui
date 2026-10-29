@@ -112,7 +112,7 @@
     top: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 8px solid var(--np-color-tertiary);
+    border-top: 8px solid var(--np-color-primary);
     transform: translateX(-50%);
   }
 </style>

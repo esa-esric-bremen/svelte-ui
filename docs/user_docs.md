@@ -1,5 +1,6 @@
 ### Screenshots
-After going to the UI in the browser you see this screen: 
+
+After going to the UI in the browser you see this screen:
 ![](ui_1.png)
 
 (Maybe without the beneficiation system, we disabled it after the challenge as the robot is presented without it most of the time)
@@ -12,7 +13,7 @@ Here you can control both systems; you can just use a mouse or touch screen to c
 
 The small blue arrows on the scroll-bar show the current value of the system.
 
-IMPORTANT: You can always press the space bar or the round home-button in the middle of the controller for a soft-stop for the excavation system. When you press it the bucket, screw and linear actuators should stop immediately. However, this is only a soft stop, so all systems will stay on and have power. 
+IMPORTANT: You can always press the space bar or the round home-button in the middle of the controller for a soft-stop for the excavation system. When you press it the bucket, screw and linear actuators should stop immediately. However, this is only a soft stop, so all systems will stay on and have power.
 
 In case of an emergency press the emergency-off button on the remote emergency-off!
 

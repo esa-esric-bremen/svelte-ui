@@ -91,7 +91,8 @@
     <b class="mobile">{value}</b>
   </div>
   <Button
-      variant="tonal"
+      class="step-button"
+      variant="outlined"
       disabled={readonly}
       onpressed={() => stepFromActual(-step)}
       inputMapping={leftMapping}>
@@ -106,14 +107,15 @@
       disabled={readonly} />
   </div>
   <Button
-      variant="tonal"
+      class="step-button"
+      variant="outlined"
       disabled={readonly}
       onpressed={() => stepFromActual(step)}
       inputMapping={rightMapping}>
     <img alt="increase" src="/{icon}_right.png" />
   </Button>
   <b class="value no_mobile">{value}</b>
-  <IconButton variant="outlined" disabled={readonly} inputMapping={stopMapping} onclick={stop}>
+  <IconButton size="l" variant="outlined" disabled={readonly} inputMapping={stopMapping} onclick={stop}>
     <span class="material-icons">stop</span>
   </IconButton>
 </div>
@@ -143,7 +145,20 @@
     font-size: 20pt;
   }
 
+  .action-row :global(.np-button.step-button) {
+    width: 120px;
+    height: 80px;
+    --np-button-padding: 0;
+  }
+
+  .action-row :global(.step-button .children-wrapper) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   img {
+    display: block;
     height: 64px;
   }
 </style>

@@ -9,4 +9,4 @@
 <svelte:head>
 </svelte:head>
 
-{@render children()}
+{@render children?.()}
