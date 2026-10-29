@@ -3,7 +3,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY ./svelte-ui/package.json ./svelte-ui/package-lock.json ./
-RUN npm ci
+RUN npm i -D && npm ci
 COPY ./svelte-ui/. .
 # replace the data symlink with the configs the UI is built for
 RUN rm -rf src/lib/data && mkdir src/lib/data

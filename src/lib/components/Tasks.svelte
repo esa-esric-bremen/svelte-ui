@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type IConfig from '#lib/interfaces/IConfig';
-  import { ui_state } from '#lib/state/ui.svelte';
-  import { rrc } from '#lib/rrc/clients';
+  import type IConfig from '#lib/interfaces/IConfig.js';
+  import { ui_state } from '#lib/state/ui.svelte.js';
+  import { rrc } from '#lib/rrc/clients.js';
   import { Button } from 'noph-gamepad-components';
 
   let { config }: { config: IConfig } = $props();
@@ -17,7 +17,7 @@
     {#each config.tasks ?? [] as task (task.name)}
       <Button
         variant={isRunning(task.name) ? 'filled' : 'outlined'}
-        onpressed={() => toggle(task.name)}
+        onclick={() => toggle(task.name)}
         inputMapping={{
           name: task.name,
           gamepad: -1,

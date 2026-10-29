@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type IConfig from "#lib/interfaces/IConfig";
-  import { ui_state } from "#lib/state/ui.svelte";
+  import type IConfig from "#lib/interfaces/IConfig.js";
+  import { ui_state } from "#lib/state/ui.svelte.js";
   import Actions from "./Actions.svelte";
   import Twist from "./robot/Twist.svelte";
   import Sensors from "./Sensors.svelte";

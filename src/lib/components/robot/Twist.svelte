@@ -2,9 +2,9 @@
 	import { GamepadButtons, Icon as GamepadIcon, Joystick, VirtualButton } from "svelte-gamepad-virtual-joystick";
 	import { IconButton } from "noph-gamepad-components";
 	import { Button } from "noph-ui";
-	import { emergencyMapping, gamepadActivationMapping } from "#lib/global_mappings.svelte";
+	import { emergencyMapping, gamepadActivationMapping } from "#lib/global_mappings.svelte.js";
 	import { onMount } from "svelte";
-	import { rrc } from "#lib/rrc/clients";
+	import { rrc } from "#lib/rrc/clients.js";
 
   const CONTROL_INTERVAL = 100;
   const MIN_SPEED = 0.01;
@@ -117,7 +117,7 @@
               buttons: [],
               keys: ['u']
             }}
-            onpressed={() => {
+            onclick={() => {
               speed = Math.max(speed-0.01, MIN_SPEED);
             }}
           >
@@ -132,7 +132,7 @@
               buttons: [],
               keys: ['o']
             }}
-            onpressed={() => {
+            onclick={() => {
               speed = Math.min(speed+0.01, MAX_SPEED);
             }}
           >

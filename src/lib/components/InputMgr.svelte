@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  import { hintMapping } from "#lib/global_mappings.svelte";
+  import { hintMapping } from "#lib/global_mappings.svelte.js";
+  import { addLogMessage } from "#lib/state/ui.svelte.js";
   import { component_state, InputManager, VirtualButton } from "svelte-gamepad-virtual-joystick";
 
   let {
@@ -11,8 +12,11 @@
     mgr?: InputManager
   } = $props();
 
+  // getGamepads() has empty slots, only count connected gamepads
+  const countGamepads = () => navigator.getGamepads().filter(Boolean).length;
+
   onMount(() => {
-    numGamepads = navigator.getGamepads().length;
+    numGamepads = countGamepads();
   })
 </script>
 <InputManager
@@ -30,9 +34,11 @@
 ></VirtualButton>
 
 <svelte:window
-  ongamepadconnected={() => {
-    numGamepads = navigator.getGamepads().length
-  }} 
-  ongamepaddisconnected={() => {
-    numGamepads = navigator.getGamepads().length
+  ongamepadconnected={(event) => {
+    numGamepads = countGamepads();
+    addLogMessage(`gamepad connected: ${event.gamepad.id}`, 'info');
+  }}
+  ongamepaddisconnected={(event) => {
+    numGamepads = countGamepads();
+    addLogMessage(`gamepad disconnected: ${event.gamepad.id}`, 'warning');
   }} />

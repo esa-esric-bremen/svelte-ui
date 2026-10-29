@@ -9,7 +9,7 @@
 <div class="toolbar">
   <GamepadButton
     variant={fullRange ? 'filled' : 'outlined'}
-    onpressed={() => (fullRange = !fullRange)}
+    onclick={() => (fullRange = !fullRange)}
     inputMapping={{ name: 'toggle_button_range', gamepad: -1, buttons: [], keys: [] }}
     >full range</GamepadButton
   >

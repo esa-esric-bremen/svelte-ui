@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type IAction from '#lib/interfaces/IAction';
-  import type IConfig from '#lib/interfaces/IConfig';
-  import { ui_state } from '#lib/state/ui.svelte';
-  import { rrc } from '#lib/rrc/clients';
-  import { emergencyMapping } from '#lib/global_mappings.svelte';
+  import type IAction from '#lib/interfaces/IAction.js';
+  import type IConfig from '#lib/interfaces/IConfig.js';
+  import { ui_state } from '#lib/state/ui.svelte.js';
+  import { rrc } from '#lib/rrc/clients.js';
+  import { emergencyMapping } from '#lib/global_mappings.svelte.js';
   import StepSlider from '#lib/StepSlider.svelte';
   import { Button, IconButton } from 'noph-gamepad-components';
   import { GamepadButtons, type ButtonInput } from 'svelte-gamepad-virtual-joystick';
@@ -94,7 +94,7 @@
       class="step-button"
       variant="outlined"
       disabled={readonly}
-      onpressed={() => stepFromActual(-step)}
+      onclick={() => stepFromActual(-step)}
       inputMapping={leftMapping}>
     <img alt="decrease" src="/{icon}_left.png" />
   </Button>
@@ -110,7 +110,7 @@
       class="step-button"
       variant="outlined"
       disabled={readonly}
-      onpressed={() => stepFromActual(step)}
+      onclick={() => stepFromActual(step)}
       inputMapping={rightMapping}>
     <img alt="increase" src="/{icon}_right.png" />
   </Button>

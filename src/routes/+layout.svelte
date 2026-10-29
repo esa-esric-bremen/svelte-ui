@@ -1,12 +1,12 @@
 <script lang="ts">
   import 'noph-ui/defaultTheme';
   import '#lib/app.css';
-  import type { LayoutProps } from './$types';
+  import { onMount } from 'svelte';
+  import { startAll } from '#lib/rrc/clients.js';
 
   let { children } = $props();
-</script>
 
-<svelte:head>
-</svelte:head>
+  onMount(startAll);
+</script>
 
 {@render children?.()}

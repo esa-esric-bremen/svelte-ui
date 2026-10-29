@@ -1,4 +1,4 @@
-import type { IGraphConfig } from "./IGraphConfig"
+import type { IGraphSettings } from "./IGraphConfig"
 
 export default interface ISensor {
   id: string
@@ -12,5 +12,5 @@ export default interface ISensor {
   unit?: string
   scale?: number
   fixed?: number
-  graph?: IGraphConfig
+  graph?: IGraphSettings
 }

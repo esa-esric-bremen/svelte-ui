@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { drawerMapping } from '#lib/global_mappings.svelte';
+  import { drawerMapping } from '#lib/global_mappings.svelte.js';
   import { NavigationDrawer } from 'noph-gamepad-components';
   import { NavigationDrawerItem } from 'noph-ui';
   import type { InputManager } from 'svelte-gamepad-virtual-joystick';

@@ -4,7 +4,10 @@ body {
 	font-family: 'Roboto', sans-serif;
 }
 
+/* inside the flex column of <main>: without a width it shrinks to its content */
 .center_main {
+	width: 100%;
+	box-sizing: border-box;
 	max-width: 1200px;
 	margin: 10px auto;
 	padding: 0 8px;

@@ -6,7 +6,7 @@
   import ButtonHint from '#lib/components/ButtonHint.svelte';
   import ControlToolbar from '#lib/components/ControlToolbar.svelte';
   import System from '#lib/components/System.svelte';
-  import configs from '#lib/configs';
+  import configs from '#lib/configs.js';
 
   let fullRange = $state(false);
 

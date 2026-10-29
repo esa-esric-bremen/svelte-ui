@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type IAction from '#lib/interfaces/IAction';
-  import type IConfig from '#lib/interfaces/IConfig';
-  import { ui_state } from '#lib/state/ui.svelte';
-  import { rrc } from '#lib/rrc/clients';
+  import type IAction from '#lib/interfaces/IAction.js';
+  import type IConfig from '#lib/interfaces/IConfig.js';
+  import { ui_state } from '#lib/state/ui.svelte.js';
+  import { rrc } from '#lib/rrc/clients.js';
   import ActionSlider from './base/ActionSlider.svelte';
   import { Button } from 'noph-ui';
   import { onMount } from 'svelte';

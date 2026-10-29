@@ -1,8 +1,12 @@
-import { addLogMessage, ui_state } from '#lib/state/ui.svelte';
-import type IRobotRemoteControl from '#lib/interfaces/IRobotRemoteControl';
-import type ILogMessage from '#lib/interfaces/ILogMessage';
+import { addLogMessage, ui_state, type LinkState } from '#lib/state/ui.svelte.js';
+import { updateTotals } from '#lib/state/totals.svelte.js';
+import type IConfig from '#lib/interfaces/IConfig.js';
+import type IRobotRemoteControl from '#lib/interfaces/IRobotRemoteControl.js';
+import type ILogMessage from '#lib/interfaces/ILogMessage.js';
 
 const RECONNECT_MS = 500;
+// the relay sends at least every 500 ms while the robot is connected
+const STALE_MS = 2000;
 const MAX_HISTORY = 600;
 
 interface TelemetryMessage {
@@ -35,19 +39,81 @@ function toLevel(level = 0): ILogMessage['level'] {
 export default class RrcClient {
 	private websocket?: WebSocket;
 	private readonly base: string;
+	private readonly label: string;
+	private lastRobotData = 0;
+	private relayUpSince = 0;
 
-	constructor(private readonly system_name: string) {
-		this.base = `/backend/${system_name}`;
+	constructor(private readonly config: IConfig) {
+		this.base = `/backend/${config.system_name}`;
+		this.label = config.name ?? config.system_name;
+		ui_state.connection[config.system_name] = { relay: 'unknown', robot: 'unknown' };
 	}
 
-	connect() {
+	private get system_name() {
+		return this.config.system_name;
+	}
+
+	start() {
+		this.connect();
+		setInterval(() => this.checkRobot(), STALE_MS / 4);
+	}
+
+	private connect() {
 		const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
 		this.websocket = new WebSocket(`${protocol}://${location.host}${this.base}/ws`);
+		this.websocket.onopen = () => {
+			this.relayUpSince = Date.now();
+			this.setRelay('up');
+		};
 		this.websocket.onmessage = (ev) => this.handleMessage(JSON.parse(ev.data));
+		// retry quietly, only changes are logged
 		this.websocket.onclose = () => {
-			addLogMessage(`${this.system_name}: telemetry connection closed`, 'error');
+			this.setRelay('down');
 			setTimeout(() => this.connect(), RECONNECT_MS);
 		};
+	}
+
+	private setRelay(state: LinkState) {
+		const connection = ui_state.connection[this.system_name];
+		if (connection.relay === state) return;
+		if (state === 'up') {
+			addLogMessage(`${this.label}: relay connected`, 'info');
+		} else {
+			addLogMessage(
+				`${this.label}: ${connection.relay === 'up' ? 'relay connection lost' : 'relay not reachable'}`,
+				'error'
+			);
+			// nothing known about the robot without the relay
+			connection.robot = 'unknown';
+		}
+		connection.relay = state;
+	}
+
+	// Robot data arriving tells whether the robot is connected to the relay.
+	private checkRobot() {
+		const connection = ui_state.connection[this.system_name];
+		if (connection.relay !== 'up') return;
+		const now = Date.now();
+		let state: LinkState;
+		if (now - this.lastRobotData < STALE_MS) {
+			state = 'up';
+		} else if (now - this.relayUpSince > STALE_MS) {
+			state = 'down';
+		} else {
+			return; // just connected, give the robot time to send
+		}
+		if (state === connection.robot) return;
+		if (state === 'up') {
+			addLogMessage(`${this.label}: robot connected`, 'info');
+		} else {
+			addLogMessage(
+				connection.robot === 'up'
+					? `${this.label}: no data from robot for ${STALE_MS / 1000} s, values are outdated`
+					: `${this.label}: robot not connected`,
+				'error'
+			);
+		}
+		connection.robot = state;
 	}
 
 	setSimpleAction(name: string, state: number) {
@@ -77,6 +143,10 @@ export default class RrcClient {
 
 	private handleMessage(message: TelemetryMessage) {
 		const data = JSON.parse(message.json);
+		// the relay keeps sending its own log messages while the robot is gone
+		if (message.type !== 'LOG_MESSAGE') {
+			this.lastRobotData = Date.now();
+		}
 		switch (message.type) {
 			case 'SIMPLE_SENSOR':
 				this.handleSensor(data);
@@ -103,6 +173,7 @@ export default class RrcClient {
 			history.push([value, time]);
 			if (history.length > MAX_HISTORY) history.shift();
 		});
+		updateTotals(this.config, Object.fromEntries(names.map((id, i) => [id, values[i] ?? 0])), time);
 	}
 
 	private handleActions(actions: SimpleActions) {
