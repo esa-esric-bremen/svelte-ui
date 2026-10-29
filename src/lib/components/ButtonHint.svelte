@@ -3,13 +3,13 @@
   import { hintMapping } from '#lib/global_mappings.svelte.js';
   import { onMount } from 'svelte';
 
-  let showPopover: (() => void) | undefined = $state();
+  let open = $state(false);
 
-  onMount(() => showPopover?.());
+  onMount(() => (open = true));
 </script>
 
 <Snackbar
-  bind:showPopover
+  bind:open
   label="Press '{hintMapping.keys[0].toUpperCase()}' or Share to toggle help."
   timeout={6000}
 />

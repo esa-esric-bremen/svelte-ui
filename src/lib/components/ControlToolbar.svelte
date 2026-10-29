@@ -10,7 +10,7 @@
   <GamepadButton
     variant={fullRange ? 'filled' : 'outlined'}
     onclick={() => (fullRange = !fullRange)}
-    inputMapping={{ name: 'toggle_button_range', gamepad: -1, buttons: [], keys: [] }}
+    inputMapping={{ name: 'toggle_button_range', gamepad: -1, buttons: [], keys: ['r'] }}
     >full range</GamepadButton
   >
   <Button

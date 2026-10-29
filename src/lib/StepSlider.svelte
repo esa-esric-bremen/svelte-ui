@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Slider } from 'noph-gamepad-components';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import type { SliderInput } from 'svelte-gamepad-virtual-joystick';
 
   let {
@@ -36,8 +36,20 @@
   };
 
   const position = (v: number) => ((v - min) / (max - min)) * 100;
-  const trackLeft = (percent: number) =>
-    `calc(var(--np-slider-layer-inset, 6px) + ${percent / 100} * (100% - 2 * var(--np-slider-layer-inset, 6px)))`;
+  const HANDLE_WIDTH = 'var(--np-slider-handle-width, 0.25rem)';
+  let wrapper: HTMLDivElement | undefined = $state();
+  let corner = $state('0px');
+  onMount(() => {
+    const slider = wrapper?.querySelector('.np-slider');
+    if (slider) corner = getComputedStyle(slider).getPropertyValue('--_corner').trim() || '0px';
+  });
+  const trackLeft = (percent: number) => {
+    const f = percent / 100;
+    if (step > 0 && f > 0 && f < 1) {
+      return `calc(${HANDLE_WIDTH} / 2 + ${corner} + ${f} * (100% - ${HANDLE_WIDTH} - 2 * ${corner}))`;
+    }
+    return `calc(${HANDLE_WIDTH} / 2 + ${f} * (100% - ${HANDLE_WIDTH}))`;
+  };
 
   const ticks = $derived.by(() => {
     if (step <= 0 || min >= max) return [];
@@ -74,7 +86,7 @@
   );
 </script>
 
-<div class="slider-wrapper">
+<div class="slider-wrapper" bind:this={wrapper}>
   <div class="tick-container">
     {#each ticks as tick (tick)}
       <div class="tick-line" class:is-start={tick == start} style:left={trackLeft(position(tick))}></div>
@@ -93,7 +105,7 @@
     </div>
   {/if}
 
-  <Slider bind:value {disabled} {min} {max} {step} {inputMapping} addHints={false} showValue={false} size="s" />
+  <Slider bind:value {disabled} {min} {max} {step} {inputMapping} addHints={false} size="s" />
 </div>
 
 <style>
